@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sorting", "Sorting\Sorting.csproj", "{BDDA3C1D-F097-4AD4-9D19-51F0DE27704F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rubik", "Rubik\Rubik.csproj", "{10A90432-1187-4E0F-ADFB-195B5B83757F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{BDDA3C1D-F097-4AD4-9D19-51F0DE27704F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDDA3C1D-F097-4AD4-9D19-51F0DE27704F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDDA3C1D-F097-4AD4-9D19-51F0DE27704F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10A90432-1187-4E0F-ADFB-195B5B83757F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10A90432-1187-4E0F-ADFB-195B5B83757F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10A90432-1187-4E0F-ADFB-195B5B83757F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10A90432-1187-4E0F-ADFB-195B5B83757F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,7 +7,7 @@ using System.Windows.Input;
 namespace Sorting
 {
     /// <summary>
-    /// MainWindow.xaml 的交互逻辑
+    /// Sorting.xaml 的交互逻辑
     /// </summary>
     public partial class MainWindow : Window
     {
@@ -382,7 +382,7 @@ namespace Sorting
         private void TextBox_RunCount_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             Regex re = new Regex(@"[^0-9]+");
-            e.Handled = re.IsMatch(e.Text.Trim());
+            e.Handled = re.IsMatch(e.Text);
         }
 
         // 显示数组内容，只运行一次
@@ -417,6 +417,11 @@ namespace Sorting
         private void CheckBox_Decimal_Unchecked(object sender, RoutedEventArgs e)
         {
             flagDecimal = false;
+        }
+
+        private void TextBox_RunCount_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            e.Handled = (e.Key == Key.Space);
         }
     }
 }

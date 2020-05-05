@@ -26,12 +26,67 @@ namespace RubikSolve
         {
             InitializeComponent();
             
-            rubik.UpdateRubikCanvas(RubikCanvas);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Button_UC_Click(object sender, RoutedEventArgs e)
         {
-            rubik.RightClockwise(RubikCanvas);
+            rubik.UpCounterClockwise(rubik.rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Button_U_Click(object sender, RoutedEventArgs e)
+        {
+            rubik.UpClockwise(rubik.rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Button_R_Click(object sender, RoutedEventArgs e)
+        {
+            rubik.RightClockwise(rubik.rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Button_RC_Click(object sender, RoutedEventArgs e)
+        {
+            rubik.RightCounterClockwise(rubik.rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Button_FC_Click(object sender, RoutedEventArgs e)
+        {
+            rubik.FrontCounterClockwise(rubik.rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Button_F_Click(object sender, RoutedEventArgs e)
+        {
+            rubik.FrontClockwise(rubik.rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Slider_ShuffleStep_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            try
+            {
+                Label_ShuffleStep.Content = Slider_ShuffleStep.Value;
+            }
+            catch (Exception)
+            {
+                e.Handled = true;
+            }
+        }
+
+        private void Button_Shuffle_Click(object sender, RoutedEventArgs e)
+        {
+            TextBlock_ShuffleRecord.Text = rubik.Shuffle((int)Slider_ShuffleStep.Value);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
+        }
+
+        private void Button_SearchSolution_Click(object sender, RoutedEventArgs e)
+        {
+            TextBlock_SolutionTitle.Text = rubik.Solve(true, Canvas_Rubik);
+            rubik.UpdateRubikCanvas(Canvas_Rubik);
         }
     }
 
@@ -46,6 +101,8 @@ namespace RubikSolve
 
         public enum Spin { F, FC, R, RC, U, UC};                            // 枚举各旋转操作
 
+        public string[] stringSpin = { "F ", "F' ", "R ", "R' ", "U ", "U' "};
+
         public int[,] rubik = new int[6, 4];                                // 魔方数组，6面，每面4块
         
         // 构造函数
@@ -54,6 +111,7 @@ namespace RubikSolve
             Initialize();
         }
 
+        // 生成多边形贴图
         private Polygon GeneratePolygon(int surface, int block, int color)
         {
             Polygon polygon = new Polygon();
@@ -87,6 +145,7 @@ namespace RubikSolve
             return polygon;
         }
 
+        // 生成多边形顶点点集
         private PointCollection GeneratePoints(int surface, int block)
         {
             PointCollection points = new PointCollection();
@@ -254,7 +313,6 @@ namespace RubikSolve
             return points;
         }
 
-
         // 获取模仿状态Canvas图
         public void UpdateRubikCanvas(Canvas canvas)
         {
@@ -277,8 +335,8 @@ namespace RubikSolve
                     canvas.Children.Add(GeneratePolygon(indexSurface, indexBlock, rubik[indexSurface, indexBlock]));
                 }
             }
+            canvas.UpdateLayout();
         }
-
 
         // 魔方状态初始化
         public void Initialize()
@@ -290,6 +348,227 @@ namespace RubikSolve
                     rubik[indexSurface, indexBlock] = indexSurface;
                 }
             }
+        }
+
+        // 打乱魔方
+        public string Shuffle(int totalStep)
+        {
+            string stringStep = "";
+            if (totalStep < 0)
+            {
+                MessageBox.Show("打乱步数不可为负！");
+            }
+            else
+            {
+                int[] rollCollection = GenerateRandom(1, 6, totalStep);
+                for (int indexStep = 0; indexStep < totalStep; indexStep++)
+                {
+                    stringStep += OneStep(rubik, rollCollection[indexStep]);
+                }
+            }
+            return stringStep;
+        }
+
+        // 根据输入的操作码执行一步操作
+        private string OneStep(int[,] rubik, int step)
+        {
+            string stringStep = "";
+            switch (step)
+            {
+                case (int)Spin.F:
+                    stringStep += stringSpin[(int)FrontClockwise(rubik)];
+                    break;
+                case (int)Spin.FC:
+                    stringStep += stringSpin[(int)FrontCounterClockwise(rubik)];
+                    break;
+                case (int)Spin.U:
+                    stringStep += stringSpin[(int)UpClockwise(rubik)];
+                    break;
+                case (int)Spin.UC:
+                    stringStep += stringSpin[(int)UpCounterClockwise(rubik)];
+                    break;
+                case (int)Spin.R:
+                    stringStep += stringSpin[(int)RightClockwise(rubik)];
+                    break;
+                case (int)Spin.RC:
+                    stringStep += stringSpin[(int)RightCounterClockwise(rubik)];
+                    break;
+                default:
+                    break;
+            }
+            return stringStep;
+        }
+
+        // 生成随机种子
+        private static int GenerateRandomSeed()
+        {
+            return (int)DateTime.Now.Ticks;
+        }
+
+        // 产生随机数组
+        // 输入随机数下限 minValue，上限 maxValue，生成数量 randNum
+        private static int[] GenerateRandom(int minValue, int maxValue, int randNum)
+        {
+            Random ran = new Random(GenerateRandomSeed());
+            int[] arr = new int[randNum];
+
+            for (int i = 0; i < randNum; i++)
+            {
+                arr[i] = ran.Next(minValue, maxValue);
+            }
+
+            return arr;
+        }
+
+        // 拷贝模仿状态
+        private int[,] CopyRubik(int[,] rubikOrigin)
+        {
+            int[,] rubikNew = new int[6, 4];
+            for (int indexSurface = 0; indexSurface < 6; indexSurface++)
+            {
+                for (int indexBlock = 0; indexBlock < 4; indexBlock++)
+                {
+                    rubikNew[indexSurface, indexBlock] = rubikOrigin[indexSurface, indexBlock];
+                }
+            }
+            return rubikNew;
+        }
+
+
+        // 搜索魔方解
+        public string Solve(bool boolExportStepImage, Canvas canvasRubik)
+        {
+            int[,] rubikOrigin = CopyRubik(rubik);  // 记录求解前的状态
+            string stringPath = "";
+            SolveNode finalNode;    // 最终节点
+            // 初始化队列
+            Queue<SolveNode> checkQueue = new Queue<SolveNode>();
+            SolveNode solveNodeRoot = new SolveNode
+            {
+                spin = -1,
+                currentRubik = CopyRubik(rubik),
+                path = new List<int>()
+            };
+
+            checkQueue.Enqueue(solveNodeRoot);
+
+            while (true)
+            {
+                if (CheckSurface(checkQueue.Peek().currentRubik))   // 检查队列头的魔方状态
+                {
+                    // 检查通过
+                    finalNode = checkQueue.Peek();
+                    break;
+                }
+                else 
+                {
+                    // 检查不通过
+                    foreach (SolveNode node in GetSolveNodeSon(checkQueue.Dequeue()))
+                    {
+                        checkQueue.Enqueue(node);
+                    }
+                }
+            }
+            int num = 0;
+            if (boolExportStepImage)
+            {
+                SaveCanvas(canvasRubik, 96, $@"d:\canvas\canvas{num++}.png");
+            }
+            foreach (int step in finalNode.path)
+            {
+                stringPath += OneStep(rubik, step);
+                if (boolExportStepImage)
+                {
+                    UpdateRubikCanvas(canvasRubik);
+                    SaveCanvas(canvasRubik, 96, $@"d:\canvas\canvas{num++}.png");
+                }
+            }
+
+            return stringPath;
+        }
+
+        // 保存canvas
+        public static void SaveCanvas(Canvas canvas, int dpi, string filename)
+        {
+            Size size = new Size(canvas.ActualWidth, canvas.ActualHeight);
+            canvas.Measure(size);
+            //canvas.Arrange(new Rect(size));
+
+            var rtb = new RenderTargetBitmap(
+                (int)canvas.ActualWidth, //width
+                (int)canvas.ActualHeight, //height
+                dpi, //dpi x
+                dpi, //dpi y
+                PixelFormats.Pbgra32 // pixelformat
+                );
+            rtb.Render(canvas);
+
+            SaveRTBAsPNG(rtb, filename);
+        }
+
+        private static void SaveRTBAsPNG(RenderTargetBitmap bmp, string filename)
+        {
+            var enc = new PngBitmapEncoder();
+            enc.Frames.Add(BitmapFrame.Create(bmp));
+
+            using (var stm = System.IO.File.Create(filename))
+            {
+                enc.Save(stm);
+            }
+        }
+
+        // 获取rubikOrigin经过path后的魔方结果
+        private int[,] ProcessRubik(int[,] rubikOrigin, List<int> path)
+        {
+            int[,] rubikNew = CopyRubik(rubikOrigin);
+            foreach (int spin in path)
+            {
+                OneStep(rubikNew, spin);
+            }
+            return rubikNew;
+        }
+
+        // 获取可能的下一步旋转
+        private List<SolveNode> GetSolveNodeSon(SolveNode node)
+        {
+            List<SolveNode> nodeSon = new List<SolveNode>();
+            int oppositeSpin;   // 获取该操作的相反旋转
+            if (node.spin == -1)        // 初始状态
+            {
+                oppositeSpin = -1;
+            }
+            else if (node.spin % 2 == 1)
+            {
+                oppositeSpin = node.spin - 1;
+            }
+            else
+            {
+                oppositeSpin = node.spin + 1;
+            }
+            // 本循环会成功执行五次，失败的一次为与传入操作的相反操作
+            for (int currentSpin = 0; currentSpin < 6; currentSpin++)
+            {
+                if (currentSpin != oppositeSpin)
+                {
+                    SolveNode newNode = new SolveNode();
+                    newNode.path = new List<int>();
+                    node.path.ForEach(i => newNode.path.Add(i));    // 拷贝步骤
+                    newNode.path.Add(currentSpin);                  // 添加本步骤
+                    newNode.spin = currentSpin;                     // 标记本步骤
+                    int[,] currentRubik = CopyRubik(node.currentRubik);
+                    OneStep(currentRubik, currentSpin);
+                    newNode.currentRubik = currentRubik;
+                    nodeSon.Add(newNode);                           // 加入
+                }
+            }
+            return nodeSon;
+        }
+
+        private struct SolveNode
+        {
+            public int spin;            // 旋转操作编号
+            public List<int> path;      // 到达该节点的路径
+            public int[,] currentRubik; // 当前节点模仿状态
         }
 
         // 检查魔方状态，各面四块一致则返回真，否则返回假
@@ -317,87 +596,79 @@ namespace RubikSolve
         }
 
         // 定义旋转操作 - 前顺时针
-        public Spin FrontClockwise(Canvas canvas)
+        public Spin FrontClockwise(int[,] rubik)
         {
             // 顺时针旋转前面四面
-            RollBlocks(true, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Front, (int)Block.RightBottom, (int)Surface.Front, (int)Block.RightBottom, (int)Surface.Front, (int)Block.LeftBottom);
+            RollBlocks(rubik, true, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Front, (int)Block.RightTop, (int)Surface.Front, (int)Block.RightBottom, (int)Surface.Front, (int)Block.LeftBottom);
             // 顺时针旋转靠左的邻接侧面
-            RollBlocks(true, (int)Surface.Up, (int)Block.LeftBottom, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Left, (int)Block.LeftBottom);
+            RollBlocks(rubik, true, (int)Surface.Up, (int)Block.LeftBottom, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Left, (int)Block.LeftBottom);
             // 顺时针旋转靠右的邻接侧面
-            RollBlocks(true, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom, (int)Surface.Down, (int)Block.LeftBottom, (int)Surface.Left, (int)Block.LeftTop);
-            UpdateRubikCanvas(canvas);
+            RollBlocks(rubik, true, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom, (int)Surface.Down, (int)Block.LeftBottom, (int)Surface.Left, (int)Block.LeftTop);
             return Spin.F;
         }
 
         // 定义旋转操作 - 前逆时针
-        public Spin FrontCounterClockwise(Canvas canvas)
+        public Spin FrontCounterClockwise(int[,] rubik)
         {
             // 逆时针旋转前面四面
-            RollBlocks(false, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Front, (int)Block.RightBottom, (int)Surface.Front, (int)Block.RightBottom, (int)Surface.Front, (int)Block.LeftBottom);
+            RollBlocks(rubik, false, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Front, (int)Block.RightTop, (int)Surface.Front, (int)Block.RightBottom, (int)Surface.Front, (int)Block.LeftBottom);
             // 逆时针旋转靠左的邻接侧面
-            RollBlocks(false, (int)Surface.Up, (int)Block.LeftBottom, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Left, (int)Block.LeftBottom);
+            RollBlocks(rubik, false, (int)Surface.Up, (int)Block.LeftBottom, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Left, (int)Block.LeftBottom);
             // 逆时针旋转靠右的邻接侧面
-            RollBlocks(false, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom, (int)Surface.Down, (int)Block.LeftBottom, (int)Surface.Left, (int)Block.LeftTop);
-            UpdateRubikCanvas(canvas);
+            RollBlocks(rubik, false, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom, (int)Surface.Down, (int)Block.LeftBottom, (int)Surface.Left, (int)Block.LeftTop);
             return Spin.FC;
         }
 
         // 定义旋转操作 - 右顺时针
-        public Spin RightClockwise(Canvas canvas)
+        public Spin RightClockwise(int[,] rubik)
         {
             // 顺时针旋转右面四面
-            RollBlocks(true, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightBottom, (int)Surface.Right, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom);
+            RollBlocks(rubik, true, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightTop, (int)Surface.Right, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom);
             // 顺时针旋转靠左的邻接侧面
-            RollBlocks(true, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Down, (int)Block.RightTop, (int)Surface.Front, (int)Block.RightBottom);
+            RollBlocks(rubik, true, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Down, (int)Block.RightTop, (int)Surface.Front, (int)Block.RightBottom);
             // 顺时针旋转靠右的邻接侧面
-            RollBlocks(true, (int)Surface.Up, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightBottom, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Front, (int)Block.RightTop);
-            UpdateRubikCanvas(canvas);
+            RollBlocks(rubik, true, (int)Surface.Up, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightBottom, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Front, (int)Block.RightTop);
             return Spin.R;
         }
 
         // 定义旋转操作 - 右逆时针
-        public Spin RightCounterClockwise(Canvas canvas)
+        public Spin RightCounterClockwise(int[,] rubik)
         {
             // 逆时针旋转右面四面
-            RollBlocks(false, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightBottom, (int)Surface.Right, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom);
+            RollBlocks(rubik, false, (int)Surface.Right, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightTop, (int)Surface.Right, (int)Block.RightBottom, (int)Surface.Right, (int)Block.LeftBottom);
             // 逆时针旋转靠左的邻接侧面
-            RollBlocks(false, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Down, (int)Block.RightTop, (int)Surface.Front, (int)Block.RightBottom);
+            RollBlocks(rubik, false, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Down, (int)Block.RightTop, (int)Surface.Front, (int)Block.RightBottom);
             // 逆时针旋转靠右的邻接侧面
-            RollBlocks(false, (int)Surface.Up, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightBottom, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Front, (int)Block.RightTop);
-            UpdateRubikCanvas(canvas);
+            RollBlocks(rubik, false, (int)Surface.Up, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightBottom, (int)Surface.Down, (int)Block.RightBottom, (int)Surface.Front, (int)Block.RightTop);
             return Spin.RC;
         }
 
-
         // 定义旋转操作 - 上顺时针
-        public Spin UpClockwise(Canvas canvas)
+        public Spin UpClockwise(int[,] rubik)
         {
             // 顺时针旋转上面四面
-            RollBlocks(true, (int)Surface.Up, (int)Block.LeftTop, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Up, (int)Block.LeftBottom);
+            RollBlocks(rubik, true, (int)Surface.Up, (int)Block.LeftTop, (int)Surface.Up, (int)Block.RightTop, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Up, (int)Block.LeftBottom);
             // 顺时针旋转靠左的邻接侧面
-            RollBlocks(true, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Left, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Right, (int)Block.LeftTop);
+            RollBlocks(rubik, true, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Left, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Right, (int)Block.LeftTop);
             // 顺时针旋转靠右的邻接侧面
-            RollBlocks(true, (int)Surface.Front, (int)Block.RightTop, (int)Surface.Left, (int)Block.LeftTop, (int)Surface.Back, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightTop);
-            UpdateRubikCanvas(canvas);
+            RollBlocks(rubik, true, (int)Surface.Front, (int)Block.RightTop, (int)Surface.Left, (int)Block.LeftTop, (int)Surface.Back, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightTop);
             return Spin.U;
         }
 
-
         // 定义旋转操作 - 上逆时针
-        public Spin UpCounterClockwise(Canvas canvas)
+        public Spin UpCounterClockwise(int[,] rubik)
         {
             // 逆时针旋转上面四面
-            RollBlocks(false, (int)Surface.Up, (int)Block.LeftTop, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Up, (int)Block.LeftBottom);
+            RollBlocks(rubik, false, (int)Surface.Up, (int)Block.LeftTop, (int)Surface.Up, (int)Block.RightTop, (int)Surface.Up, (int)Block.RightBottom, (int)Surface.Up, (int)Block.LeftBottom);
             // 逆时针旋转靠左的邻接侧面
-            RollBlocks(false, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Left, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Right, (int)Block.LeftTop);
+            RollBlocks(rubik, false, (int)Surface.Front, (int)Block.LeftTop, (int)Surface.Left, (int)Block.RightTop, (int)Surface.Back, (int)Block.RightTop, (int)Surface.Right, (int)Block.LeftTop);
             // 逆时针旋转靠右的邻接侧面
-            RollBlocks(false, (int)Surface.Front, (int)Block.RightTop, (int)Surface.Left, (int)Block.LeftTop, (int)Surface.Back, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightTop);
-            UpdateRubikCanvas(canvas);
+            RollBlocks(rubik, false, (int)Surface.Front, (int)Block.RightTop, (int)Surface.Left, (int)Block.LeftTop, (int)Surface.Back, (int)Block.LeftTop, (int)Surface.Right, (int)Block.RightTop);
             return Spin.UC;
         }
 
         //滚动四个方块的颜色，顺时针方向定义四个面和方块顺序，即当clockwise为true时，1到2，2到3，3到4，4到1，clockwise为false时反向
-        private void RollBlocks(bool clockwise, int surface1, int block1, int surface2, int block2, int surface3, int block3, int surface4, int block4)
+        private void RollBlocks(int[,] rubik, bool clockwise, int surface1, int block1, int surface2, int block2, int surface3, int block3, int surface4, int block4)
         {
             int cache = rubik[surface1, block1];
             if (clockwise)  // 顺时针

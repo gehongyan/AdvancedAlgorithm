@@ -5,13 +5,67 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RubikSolve"
         mc:Ignorable="d"
-        Title="Rubik" Height="686.4" Width="843.2" ResizeMode="NoResize">
+        Title="RubikSolve" Height="686.4" Width="903.2" ResizeMode="NoResize">
     <Grid>
         <Grid HorizontalAlignment="Left" Height="600" Margin="25,25,0,0" VerticalAlignment="Top" Width="600">
-            <Canvas x:Name="RubikCanvas" Background="AntiqueWhite">
+            <Canvas x:Name="Canvas_Rubik" Background="AntiqueWhite"/>
+            <Button x:Name="Button_UC" Content="U'" VerticalAlignment="Top" Click="Button_UC_Click"  Margin="305,87,220,0"/>
+            <Button x:Name="Button_U" Content="U" VerticalAlignment="Top" Margin="220,87,305,0" Click="Button_U_Click"/>
+            <Button x:Name="Button_RC" Content="R'" VerticalAlignment="Top" Margin="465,415,60,0" Click="Button_RC_Click"/>
+            <Button x:Name="Button_R" Content="R" VerticalAlignment="Top" Margin="465,392,60,0" Click="Button_R_Click"/>
+            <Button x:Name="Button_F" Content="F" VerticalAlignment="Top" Margin="60,415,465,0" Click="Button_F_Click"/>
+            <Button x:Name="Button_FC" Content="F'" VerticalAlignment="Top" Margin="60,392,465,0" Click="Button_FC_Click"/>
 
-            </Canvas>
         </Grid>
-        <Button Content="RollTest" HorizontalAlignment="Left" Margin="685,65,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+        <Grid HorizontalAlignment="Left" Height="30" Margin="665,25,0,0" VerticalAlignment="Top" Width="197">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="58*"/>
+                <ColumnDefinition Width="32*"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="Label_ShuffleStepTitle" Content="打乱次数" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Margin="-2,0,1.6,1" Width="58"/>
+            <Label x:Name="Label_ShuffleStep" Content="1" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Height="24" Margin="0" Width="29" HorizontalContentAlignment="Center"/>
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="30" Margin="665,55,0,0" VerticalAlignment="Top" Width="197">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120*"/>
+                <ColumnDefinition Width="77*"/>
+            </Grid.ColumnDefinitions>
+            <Slider x:Name="Slider_ShuffleStep" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Minimum="1" Maximum="20" ValueChanged="Slider_ShuffleStep_ValueChanged" Ticks="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20" IsSnapToTickEnabled="True" Width="113" Height="18"/>
+            <Button x:Name="Button_Shuffle" Content="打乱魔方" HorizontalAlignment="Left" Margin="2,6,-0.2,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="18" Click="Button_Shuffle_Click"/>
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="60" Margin="665,85,0,0" VerticalAlignment="Top" Width="197">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60*"/>
+                <ColumnDefinition Width="137*"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="Label_ShuffleRecordTitle" Content="打乱记录" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Width="58"/>
+            <TextBlock x:Name="TextBlock_ShuffleRecord" Text="" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Height="44" Margin="0" Width="137" Grid.RowSpan="2" TextWrapping="Wrap" TextAlignment="Center"/>
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="30" Margin="665,140,0,0" VerticalAlignment="Top" Width="197">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120*"/>
+                <ColumnDefinition Width="77*"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="Button_SearchSolution" Content="搜索解" HorizontalAlignment="Left" Margin="2,6,-0.2,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="18" Click="Button_SearchSolution_Click" />
+        </Grid>
+        <Grid HorizontalAlignment="Left" Height="60" Margin="665,165,0,0" VerticalAlignment="Top" Width="197">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="60*"/>
+                <ColumnDefinition Width="137*"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="Label_SolutionTitle" Content="解步骤" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Width="58"/>
+            <TextBlock x:Name="TextBlock_SolutionTitle" Text="" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Height="44" Margin="0" Width="137" Grid.RowSpan="2" TextWrapping="Wrap" TextAlignment="Center"/>
+        </Grid>
+
+
+
     </Grid>
 </Window>

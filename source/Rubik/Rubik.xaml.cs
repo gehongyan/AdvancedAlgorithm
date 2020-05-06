@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace RubikSolve
@@ -20,12 +15,11 @@ namespace RubikSolve
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        Rubik rubik = new Rubik();
+        private readonly Rubik rubik = new Rubik();
         public MainWindow()
         {
             InitializeComponent();
-            
+
             rubik.UpdateRubikCanvas(Canvas_Rubik);
         }
 
@@ -85,7 +79,7 @@ namespace RubikSolve
 
         private void Button_SearchSolution_Click(object sender, RoutedEventArgs e)
         {
-            TextBlock_SolutionTitle.Text = rubik.Solve(true, Canvas_Rubik);
+            TextBlock_SolutionTitle.Text = rubik.Solve(CehckBox_SaveImg.IsChecked ?? false, Canvas_Rubik);
             rubik.UpdateRubikCanvas(Canvas_Rubik);
         }
     }
@@ -93,18 +87,18 @@ namespace RubikSolve
     // 魔方类
     public class Rubik
     {
-        public enum Surface { Up, Down, Left, Right, Front, Back};          // 枚举各面
-        
-        public enum Block { LeftTop, LeftBottom, RightTop, RightBottom};    // 枚举方块在各面的位置
+        public enum Surface { Up, Down, Left, Right, Front, Back };          // 枚举各面
 
-        public enum Color { Yellow, White, Blue, Green, Red, Organe};       // 枚举各颜色 
+        public enum Block { LeftTop, LeftBottom, RightTop, RightBottom };    // 枚举方块在各面的位置
 
-        public enum Spin { F, FC, R, RC, U, UC};                            // 枚举各旋转操作
+        public enum Color { Yellow, White, Blue, Green, Red, Organe };       // 枚举各颜色 
 
-        public string[] stringSpin = { "F ", "F' ", "R ", "R' ", "U ", "U' "};
+        public enum Spin { F, FC, R, RC, U, UC };                            // 枚举各旋转操作
+
+        public string[] stringSpin = { "F ", "F' ", "R ", "R' ", "U ", "U' " };
 
         public int[,] rubik = new int[6, 4];                                // 魔方数组，6面，每面4块
-        
+
         // 构造函数
         public Rubik()
         {
@@ -114,9 +108,11 @@ namespace RubikSolve
         // 生成多边形贴图
         private Polygon GeneratePolygon(int surface, int block, int color)
         {
-            Polygon polygon = new Polygon();
-            polygon.Stroke = Brushes.Black;
-            polygon.StrokeThickness = 2;
+            Polygon polygon = new Polygon
+            {
+                Stroke = Brushes.Black,
+                StrokeThickness = 2
+            };
             switch (color)
             {
                 case (int)Color.Yellow:
@@ -356,7 +352,7 @@ namespace RubikSolve
             string stringStep = "";
             if (totalStep < 0)
             {
-                MessageBox.Show("打乱步数不可为负！");
+                System.Windows.MessageBox.Show("打乱步数不可为负！");
             }
             else
             {
@@ -438,8 +434,26 @@ namespace RubikSolve
         // 搜索魔方解
         public string Solve(bool boolExportStepImage, Canvas canvasRubik)
         {
-            int[,] rubikOrigin = CopyRubik(rubik);  // 记录求解前的状态
             string stringPath = "";
+            int num = 0;
+            string filePath = "";
+            string stringTime = DateTime.Now.ToLocalTime().ToString("yyyyMMddhhmmss");
+            if (boolExportStepImage)
+            {
+                FolderBrowserDialog m_Dialog = new FolderBrowserDialog();
+                DialogResult result = m_Dialog.ShowDialog();
+
+                if (result == DialogResult.Cancel)
+                {
+                    return "";
+                }
+                filePath = m_Dialog.SelectedPath.Trim();
+
+                Directory.CreateDirectory($@"{filePath}\{stringTime}");
+            }
+
+
+
             SolveNode finalNode;    // 最终节点
             // 初始化队列
             Queue<SolveNode> checkQueue = new Queue<SolveNode>();
@@ -460,7 +474,7 @@ namespace RubikSolve
                     finalNode = checkQueue.Peek();
                     break;
                 }
-                else 
+                else
                 {
                     // 检查不通过
                     foreach (SolveNode node in GetSolveNodeSon(checkQueue.Dequeue()))
@@ -469,18 +483,20 @@ namespace RubikSolve
                     }
                 }
             }
-            int num = 0;
+
             if (boolExportStepImage)
             {
-                SaveCanvas(canvasRubik, 96, $@"d:\canvas\canvas{num++}.png");
+                SaveCanvas(canvasRubik, 96, $@"{filePath}\{stringTime}\Rubik - {num++} - Origin.png");
             }
+
             foreach (int step in finalNode.path)
             {
-                stringPath += OneStep(rubik, step);
+                string currentStep = OneStep(rubik, step);
+                stringPath += currentStep;
                 if (boolExportStepImage)
                 {
                     UpdateRubikCanvas(canvasRubik);
-                    SaveCanvas(canvasRubik, 96, $@"d:\canvas\canvas{num++}.png");
+                    SaveCanvas(canvasRubik, 96, $@"{filePath}\{stringTime}\Rubik - {num++} - {currentStep}.png");
                 }
             }
 
@@ -494,7 +510,7 @@ namespace RubikSolve
             canvas.Measure(size);
             //canvas.Arrange(new Rect(size));
 
-            var rtb = new RenderTargetBitmap(
+            RenderTargetBitmap rtb = new RenderTargetBitmap(
                 (int)canvas.ActualWidth, //width
                 (int)canvas.ActualHeight, //height
                 dpi, //dpi x
@@ -508,24 +524,13 @@ namespace RubikSolve
 
         private static void SaveRTBAsPNG(RenderTargetBitmap bmp, string filename)
         {
-            var enc = new PngBitmapEncoder();
+            PngBitmapEncoder enc = new PngBitmapEncoder();
             enc.Frames.Add(BitmapFrame.Create(bmp));
 
-            using (var stm = System.IO.File.Create(filename))
+            using (FileStream stm = File.Create(filename))
             {
                 enc.Save(stm);
             }
-        }
-
-        // 获取rubikOrigin经过path后的魔方结果
-        private int[,] ProcessRubik(int[,] rubikOrigin, List<int> path)
-        {
-            int[,] rubikNew = CopyRubik(rubikOrigin);
-            foreach (int spin in path)
-            {
-                OneStep(rubikNew, spin);
-            }
-            return rubikNew;
         }
 
         // 获取可能的下一步旋转
@@ -550,8 +555,10 @@ namespace RubikSolve
             {
                 if (currentSpin != oppositeSpin)
                 {
-                    SolveNode newNode = new SolveNode();
-                    newNode.path = new List<int>();
+                    SolveNode newNode = new SolveNode
+                    {
+                        path = new List<int>()
+                    };
                     node.path.ForEach(i => newNode.path.Add(i));    // 拷贝步骤
                     newNode.path.Add(currentSpin);                  // 添加本步骤
                     newNode.spin = currentSpin;                     // 标记本步骤
@@ -579,7 +586,7 @@ namespace RubikSolve
                 for (int indexSurface = 0; indexSurface < 6; indexSurface++)
                 {
                     for (int indexBlock = 1; indexBlock < 4; indexBlock++)  // 比较该面另外三个块是否与0号块一致
-                    { 
+                    {
                         if (rubik[indexSurface, indexBlock] != rubik[indexSurface, 0])
                         {
                             return false;   // 不等则直接返回假
@@ -590,7 +597,7 @@ namespace RubikSolve
             }
             catch (Exception e)
             {
-                MessageBox.Show($"检查出错！{e.Message}");
+                System.Windows.MessageBox.Show($"检查出错！{e.Message}");
                 return false;
             }
         }

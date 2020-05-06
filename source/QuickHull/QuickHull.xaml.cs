@@ -112,7 +112,7 @@ namespace QuickHullSolve
             for (int index = 0; index < quickHull.historyLines.Count; index++)
             {
                 quickHull.UpdateQuickHullCanvas(Canvas_QuickHull, true, index);
-                SaveCanvas(Canvas_QuickHull, 96, $@"{filePath}\{stringTime}\QuickHull - {num++}.png");
+                SaveCanvas(Canvas_QuickHull, 96, $@"{filePath}\{stringTime}\QuickHull_{num++}.png");
             }
             quickHull.UpdateQuickHullCanvas(Canvas_QuickHull, true, (int)Slider_History.Value - 1);
         }

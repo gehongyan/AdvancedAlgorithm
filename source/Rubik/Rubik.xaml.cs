@@ -486,7 +486,7 @@ namespace RubikSolve
 
             if (boolExportStepImage)
             {
-                SaveCanvas(canvasRubik, 96, $@"{filePath}\{stringTime}\Rubik - {num++} - Origin.png");
+                SaveCanvas(canvasRubik, 96, $@"{filePath}\{stringTime}\Rubik_{num++}.png");
             }
 
             foreach (int step in finalNode.path)
@@ -496,7 +496,7 @@ namespace RubikSolve
                 if (boolExportStepImage)
                 {
                     UpdateRubikCanvas(canvasRubik);
-                    SaveCanvas(canvasRubik, 96, $@"{filePath}\{stringTime}\Rubik - {num++} - {currentStep}.png");
+                    SaveCanvas(canvasRubik, 96, $@"{filePath}\{stringTime}\Rubik_{num++}.png");
                 }
             }
 

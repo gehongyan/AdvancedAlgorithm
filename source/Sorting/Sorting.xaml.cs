@@ -15,7 +15,7 @@ namespace Sorting
         public short arrayScale = 10;        // 随机生成数组规模
         public bool flagShowArrayContent = false;
         public bool flagDecimal = false;
-        public int maxCompareCount = 200000000;
+        public long maxCompareCount = 20000000000;
         public MainWindow()
         {
             InitializeComponent();
@@ -65,7 +65,7 @@ namespace Sorting
         }
 
         // 估算执行消耗
-        private static int CountEstimated(short sortingMethod, short arrayScale, int runCount)
+        private static long CountEstimated(short sortingMethod, short arrayScale, long runCount)
         {
             if (sortingMethod == 0)
             {
@@ -78,7 +78,7 @@ namespace Sorting
         }
 
         // 估算限制消耗的情况下的最大运行次数
-        private int RuntimeEstimated(short sortingMethod, short arrayScale, int maxCompareTime)
+        private int RuntimeEstimated(short sortingMethod, short arrayScale, long maxCompareTime)
         {
             if (CheckBox_ShowArrayContent.IsChecked == true)
             {
@@ -88,11 +88,11 @@ namespace Sorting
             {
                 if (sortingMethod == 0)
                 {
-                    return maxCompareTime / arrayScale / arrayScale;
+                    return (int)(maxCompareTime / arrayScale / arrayScale);
                 }
                 else
                 {
-                    return maxCompareTime / arrayScale / (int)Math.Log(arrayScale);
+                    return (int)(maxCompareTime / arrayScale / (int)Math.Log(arrayScale));
                 }
             }
         }

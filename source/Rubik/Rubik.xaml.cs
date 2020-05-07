@@ -349,6 +349,7 @@ namespace RubikSolve
         // 打乱魔方
         public string Shuffle(int totalStep)
         {
+            Initialize();
             string stringStep = "";
             if (totalStep < 0)
             {

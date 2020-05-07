@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
@@ -26,7 +28,7 @@ namespace QuickHullSolve
         {
             try
             {
-                Label_PointNum.Content = (int)Slider_PointNum.Value;
+                TextBox_PointNum.Text = $@"{(int)Math.Pow(Slider_PointNum.Value, 2.0)}";
             }
             catch (Exception)
             {
@@ -36,14 +38,14 @@ namespace QuickHullSolve
 
         private void Button_GeneratePoints_Click(object sender, RoutedEventArgs e)
         {
-            quickHull.Generate((int)Slider_PointNum.Value, (int)Canvas_QuickHull.ActualWidth, (int)Canvas_QuickHull.ActualHeight);
+            quickHull.Generate(int.Parse(TextBox_PointNum.Text), (int)Canvas_QuickHull.ActualWidth, (int)Canvas_QuickHull.ActualHeight);
             quickHull.UpdateQuickHullCanvas(Canvas_QuickHull, false, -1);
             Button_Solve.IsEnabled = true;
         }
 
         private void Button_Solve_Click(object sender, RoutedEventArgs e)
         {
-            quickHull.Solve();
+            Label_CommandCount.Content = quickHull.Solve();
             quickHull.UpdateQuickHullCanvas(Canvas_QuickHull, true, -1);
             Button_Solve.IsEnabled = false;
             Slider_History.Maximum = quickHull.historyLines.Count;
@@ -116,6 +118,17 @@ namespace QuickHullSolve
             }
             quickHull.UpdateQuickHullCanvas(Canvas_QuickHull, true, (int)Slider_History.Value - 1);
         }
+
+        private void Label_PointNum_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            e.Handled = (e.Key == Key.Space);
+        }
+
+        private void Label_PointNum_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            Regex re = new Regex(@"[^0-9]+");
+            e.Handled = re.IsMatch(e.Text);
+        }
     }
 
     public class QuickHull
@@ -133,66 +146,83 @@ namespace QuickHullSolve
         }
 
         // 执行快包算法
-        public void Solve()
+        public int Solve()
         {
+            int totalCommandCount = 0;
             try
             {
                 Point pointMostLeft = pointsUnknown[0];
                 Point pointMostRight = pointsUnknown[0];
+                totalCommandCount += 2;
                 for (int index = 1; index < pointsUnknown.Count; index++)
                 {
+                    totalCommandCount += 2;
                     if (pointsUnknown[index].X < pointMostLeft.X)    // 待查点X < 已知极左点X
                     {
                         pointMostLeft = pointsUnknown[index];
+                        totalCommandCount++;
                     }
                     else if (pointsUnknown[index].X == pointMostLeft.X && pointsUnknown[index].Y < pointMostLeft.Y)     // 待查点X = 已知极左点X，待查点Y < 已知极左点Y
                     {
                         pointMostLeft = pointsUnknown[index];
+                        totalCommandCount++;
                     }
                     else if (pointsUnknown[index].X > pointMostRight.X) // 待查点X > 已知极右点X
                     {
                         pointMostRight = pointsUnknown[index];
+                        totalCommandCount++;
                     }
                     else if (pointsUnknown[index].X == pointMostRight.X && pointsUnknown[index].Y > pointMostRight.Y)   // 待查点X = 已知极右点X，待查点Y > 已知极左点Y
                     {
                         pointMostRight = pointsUnknown[index];
+                        totalCommandCount++;
                     }
                 }
+                totalCommandCount++;
+
                 // 移动极左极右点到顶点
                 ChangeToVertex(pointMostLeft, 0);
                 ChangeToVertex(pointMostRight, 1);
+                totalCommandCount += 4;
 
-                historyLines.Add(GetLines(pointsVertex));
+                historyLines.Add(GetLines(pointsVertex, out int commandCount));
+                totalCommandCount += commandCount;
 
                 PointCollection subPointsUp = new PointCollection(); // 上点集
                 PointCollection subPointsDown = new PointCollection(); // 下点集
 
                 // 分割点集
-                DividePoints(pointMostLeft, pointMostRight, subPointsUp, subPointsDown);
+                totalCommandCount += DividePoints(pointMostLeft, pointMostRight, subPointsUp, subPointsDown);
 
                 // 递归
-                FindSubHull(subPointsUp, pointMostLeft, pointMostRight);
-                FindSubHull(subPointsDown, pointMostRight, pointMostLeft);
-
+                totalCommandCount += FindSubHull(subPointsUp, pointMostLeft, pointMostRight);
+                totalCommandCount += FindSubHull(subPointsDown, pointMostRight, pointMostLeft);
+                return totalCommandCount;
 
             }
             catch (Exception e)
             {
                 System.Windows.MessageBox.Show(e.Message);
+                return 0;
             }
         }
 
         // 对输入的两点及其上点集执行递归算法，找到最远点，根据围成的三角形分类点，生成两条边，对每条边极其上方的点集再次执行本递归算法
-        private void FindSubHull(PointCollection points, Point pointLeft, Point pointRight)
+        private int FindSubHull(PointCollection points, Point pointLeft, Point pointRight)
         {
             if (points.Count == 0)
             {
-                return;
+                return 1;
             }
-            Point pointFarthest = FindFarthestPoint(points, pointLeft, pointRight);
+            int totalCommandCount = 0;
+            Point pointFarthest = FindFarthestPoint(points, pointLeft, pointRight, out int commandCount);
+            totalCommandCount += commandCount;
             ChangeToVertex(pointFarthest, pointsVertex.IndexOf(pointLeft) + 1);
-            historyLines.Add(GetLines(pointsVertex));
+            totalCommandCount += 3;
+            historyLines.Add(GetLines(pointsVertex, out commandCount));
+            totalCommandCount += commandCount;
             points.Remove(pointFarthest);
+            totalCommandCount++;
 
             PointCollection points1 = new PointCollection();
             PointCollection points2 = new PointCollection();
@@ -200,27 +230,33 @@ namespace QuickHullSolve
             {
                 int deter1 = CalDeter(pointLeft, pointFarthest, point);
                 int deter2 = CalDeter(pointFarthest, pointRight, point);
+                totalCommandCount += 2;
                 if (deter1 > 0)
                 {
                     points1.Add(point);
+                    totalCommandCount++;
                 }
                 else if (deter2 > 0)
                 {
                     points2.Add(point);
+                    totalCommandCount++;
                 }
                 else    // 三角形内
                 {
                     ChangeToInternal(point);
+                    totalCommandCount += 2; ;
                 }
             }
-            FindSubHull(points1, pointLeft, pointFarthest);
-            FindSubHull(points2, pointFarthest, pointRight);
+            totalCommandCount += FindSubHull(points1, pointLeft, pointFarthest);
+            totalCommandCount += FindSubHull(points2, pointFarthest, pointRight);
+            return totalCommandCount;
 
         }
 
         // 查找最远点
-        private Point FindFarthestPoint(PointCollection points, Point pointLeft, Point pointRight)
+        private Point FindFarthestPoint(PointCollection points, Point pointLeft, Point pointRight, out int commandCount)
         {
+            commandCount = 0;
             Point pointFarthest = new Point();
             int areaMax = -1;
             foreach (Point point in points)
@@ -230,31 +266,37 @@ namespace QuickHullSolve
                 {
                     pointFarthest = point;
                     areaMax = area;
+                    commandCount += 2;
                 }
             }
             return pointFarthest;
         }
 
         // 根据输入的左右两点和点集将点分割为两个部分
-        private void DividePoints(Point pointLeft, Point pointRight, PointCollection pointsUp, PointCollection pointsDown)
+        private int DividePoints(Point pointLeft, Point pointRight, PointCollection pointsUp, PointCollection pointsDown)
         {
+            int commandCount = 0;
             foreach (Point point in pointsUnknown)
             {
                 int deter = CalDeter(pointLeft, pointRight, point);
-
+                commandCount++;
                 if (deter > 0)  // 上点集
                 {
                     pointsUp.Add(point);
+                    commandCount++;
                 }
                 else if (deter == 0)    // 共线
                 {
                     ChangeToInternal(point);
+                    commandCount += 2;
                 }
                 else            // 下点集
                 {
                     pointsDown.Add(point);
+                    commandCount++;
                 }
             }
+            return commandCount;
         }
 
         // 计算行列式
@@ -313,12 +355,20 @@ namespace QuickHullSolve
         public void UpdateQuickHullCanvas(Canvas canvas, bool drawLines, int step)
         {
             canvas.Children.Clear();
+            foreach (Point point in pointsUnknown)
+            {
+                canvas.Children.Add(GeneratePoint(point, 0));   // 未知状态点
+            }
+            foreach (Point point in pointsInternal)
+            {
+                canvas.Children.Add(GeneratePoint(point, 2));   // 已分类的内部点
+            }
             // 画线
             if (drawLines)
             {
                 if (step == -1)
                 {
-                    DrawHullLines(canvas, GetLines(pointsVertex));
+                    DrawHullLines(canvas, GetLines(pointsVertex, out int _));
                 }
                 else
                 {
@@ -333,17 +383,9 @@ namespace QuickHullSolve
                 }
             }
             // 画点
-            foreach (Point point in pointsUnknown)
-            {
-                canvas.Children.Add(GeneratePoint(point, 0));   // 未知状态点
-            }
             foreach (Point point in pointsVertex)
             {
                 canvas.Children.Add(GeneratePoint(point, 1));   // 已分类的顶点
-            }
-            foreach (Point point in pointsInternal)
-            {
-                canvas.Children.Add(GeneratePoint(point, 2));   // 已分类的内部点
             }
             canvas.UpdateLayout();
         }
@@ -389,14 +431,17 @@ namespace QuickHullSolve
             canvas.UpdateLayout();
         }
 
-        private List<Line> GetLines(PointCollection points)
+        private List<Line> GetLines(PointCollection points, out int commandCount)
         {
+            commandCount = 0;
             List<Line> lines = new List<Line>();
             for (int index = 0; index < points.Count - 1; index++)
             {
                 lines.Add(GenerateLine(points[index], points[index + 1]));
+                commandCount += 2;
             }
             lines.Add(GenerateLine(points[points.Count - 1], points[0]));
+            commandCount += 2;
             return lines;
         }
 

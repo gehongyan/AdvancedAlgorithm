@@ -98,14 +98,14 @@
                 <ColumnDefinition Width="32*"/>
             </Grid.ColumnDefinitions>
             <Label x:Name="Label_PointNumTitle" Content="随机点数量" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Margin="-2,0,1.6,1" Width="80" HorizontalContentAlignment="Center"/>
-            <Label x:Name="Label_PointNum" Content="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Height="24" Margin="0" Width="64" HorizontalContentAlignment="Center"/>
+            <TextBox x:Name="TextBox_PointNum" Text="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Height="15" Margin="0" Width="64"  MaxLength="5" MaxLines="1" TextAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="Label_PointNum_PreviewTextInput"  PreviewKeyDown="Label_PointNum_PreviewKeyDown"/>
         </Grid>
         <Grid HorizontalAlignment="Left" Height="30" Margin="665,55,0,0" VerticalAlignment="Top" Width="197">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="120*"/>
                 <ColumnDefinition Width="77*"/>
             </Grid.ColumnDefinitions>
-            <Slider x:Name="Slider_PointNum" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Minimum="2" Maximum="100" ValueChanged="Slider_PointNum_ValueChanged" IsSnapToTickEnabled="True" Width="113" Height="18"/>
+            <Slider x:Name="Slider_PointNum" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Minimum="1.41421356237" Maximum="100" ValueChanged="Slider_PointNum_ValueChanged" IsSnapToTickEnabled="True" Width="113" Height="18"/>
             <Button x:Name="Button_PointNum" Content="生成随机点" HorizontalAlignment="Left" Margin="2,6,-0.2,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="18" Click="Button_GeneratePoints_Click"/>
         </Grid>
         <Button x:Name="Button_Solve" Content="执行快包算法" HorizontalAlignment="Left" Margin="787,97,0,0" VerticalAlignment="Top" Width="75" Height="18" Click="Button_Solve_Click" IsEnabled="False"/>
@@ -114,6 +114,14 @@
 
         </Grid>
         <Button x:Name="Button_SaveImg" Content="保存步骤图片" HorizontalAlignment="Left" Margin="787,165,0,0" VerticalAlignment="Top" Width="75" Height="18" Click="Button_SaveImg_Click"/>
+        <Grid HorizontalAlignment="Left" Height="30" Margin="665,200,0,0" VerticalAlignment="Top" Width="197">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="58*"/>
+                <ColumnDefinition Width="32*"/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="Label_CommandCountTitle" Content="指令行数" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Margin="-2,0,1.6,1" Width="80" HorizontalContentAlignment="Center"/>
+            <Label x:Name="Label_CommandCount" Content="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Height="24" Margin="0" Width="64" HorizontalContentAlignment="Center"/>
+        </Grid>
 
     </Grid>
 </Window>

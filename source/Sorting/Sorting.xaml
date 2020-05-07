@@ -173,7 +173,7 @@
                 <ColumnDefinition Width="7*"/>
             </Grid.ColumnDefinitions>
             <Label x:Name="Label_RunCount" Content="执行次数" Margin="0" VerticalAlignment="Center" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Grid.Row="1"/>
-            <TextBox x:Name="TextBox_RunCount" Height="24" Margin="1,3,-0.2,2.6" Text="" VerticalAlignment="Center" VerticalContentAlignment="Center" PreviewTextInput="TextBox_RunCount_PreviewTextInput" PreviewKeyDown="TextBox_RunCount_PreviewKeyDown" InputMethod.IsInputMethodEnabled="False" Grid.Column="1" MaxLength="8" MaxLines="1" Grid.Row="1" Width="74"/>
+            <TextBox x:Name="TextBox_RunCount" Height="24" Margin="1,3,-0.2,2.6" Text="" VerticalAlignment="Center" VerticalContentAlignment="Center" PreviewTextInput="TextBox_RunCount_PreviewTextInput" PreviewKeyDown="TextBox_RunCount_PreviewKeyDown" InputMethod.IsInputMethodEnabled="False" Grid.Column="1" MaxLength="9" MaxLines="1" Grid.Row="1" Width="74"/>
             <CheckBox x:Name="CheckBox_ShowArrayContent" Style="{DynamicResource SliderCheckBox}" Content="显示数组" HorizontalAlignment="Center" Margin="0" Grid.Row="2" VerticalAlignment="Center" Checked="CheckBox_Checked" Unchecked="CheckBox_ShowArrayContent_Unchecked"/>
             <Button x:Name="Button_Roll" Content="运行" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Click="Button_Roll_Click" Grid.Column="1" Grid.Row="2" Width="60"/>
             <Label x:Name="Label_AverageCompareCountTitle" Content="均比较计数" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center"/>

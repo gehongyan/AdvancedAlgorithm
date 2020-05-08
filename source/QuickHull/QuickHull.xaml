@@ -108,7 +108,7 @@
             <Slider x:Name="Slider_PointNum" HorizontalAlignment="Center" Margin="0" VerticalAlignment="Center" Minimum="1.41421356237" Maximum="100" ValueChanged="Slider_PointNum_ValueChanged" IsSnapToTickEnabled="True" Width="113" Height="18"/>
             <Button x:Name="Button_PointNum" Content="生成随机点" HorizontalAlignment="Left" Margin="2,6,-0.2,0" VerticalAlignment="Top" Width="75" Grid.Column="1" Height="18" Click="Button_GeneratePoints_Click"/>
         </Grid>
-        <Button x:Name="Button_Solve" Content="执行快包算法" HorizontalAlignment="Left" Margin="787,97,0,0" VerticalAlignment="Top" Width="75" Height="18" Click="Button_Solve_Click" IsEnabled="False"/>
+        <Button x:Name="Button_Solve" Content="单次快包算法" HorizontalAlignment="Left" Margin="787,97,0,0" VerticalAlignment="Top" Width="75" Height="18" Click="Button_Solve_Click" IsEnabled="False"/>
         <Grid HorizontalAlignment="Left" Height="30" Margin="665,130,0,0" VerticalAlignment="Top" Width="197">
             <Slider x:Name="Slider_History" HorizontalAlignment="Center" VerticalAlignment="Center" Minimum="1" Maximum="1" ValueChanged="Slider_History_ValueChanged" Width="194" Height="22"/>
 
@@ -120,8 +120,10 @@
                 <ColumnDefinition Width="32*"/>
             </Grid.ColumnDefinitions>
             <Label x:Name="Label_CommandCountTitle" Content="指令行数" HorizontalAlignment="Center" VerticalAlignment="Center" Height="24" Margin="-2,0,1.6,1" Width="80" HorizontalContentAlignment="Center"/>
-            <Label x:Name="Label_CommandCount" Content="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Height="24" Margin="0" Width="64" HorizontalContentAlignment="Center"/>
+            <Label x:Name="Label_CommandCount" Content="" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="2" Height="24" Margin="0" Width="64" HorizontalContentAlignment="Center"/>
         </Grid>
+        <Button x:Name="Button_MultiQuickHull" Content="多次快包算法" HorizontalAlignment="Left" Margin="787,244,0,0" VerticalAlignment="Top" Width="75" Height="18" Click="Button_MultiQuickHull_Click"/>
+        <TextBox x:Name="TextBox_RunTime" HorizontalAlignment="Center" Height="24" Margin="657,241,119.8,0" TextWrapping="Wrap" Text="1234" VerticalAlignment="Top" Width="95"  TextAlignment="Center" InputMethod.IsInputMethodEnabled="False" PreviewTextInput="Label_PointNum_PreviewTextInput"  PreviewKeyDown="Label_PointNum_PreviewKeyDown"/>
 
     </Grid>
 </Window>

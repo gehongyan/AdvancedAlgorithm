@@ -129,6 +129,21 @@ namespace QuickHullSolve
             Regex re = new Regex(@"[^0-9]+");
             e.Handled = re.IsMatch(e.Text);
         }
+
+        private void Button_MultiQuickHull_Click(object sender, RoutedEventArgs e)
+        {
+            long totalCommandCount = 0;
+            int pointNum = int.Parse(TextBox_PointNum.Text);
+            int width = (int)Canvas_QuickHull.ActualWidth;
+            int height = (int)Canvas_QuickHull.ActualHeight;
+            int runTime = int.Parse(TextBox_RunTime.Text);
+            for (int indexCount = 0; indexCount < runTime; indexCount++)
+            {
+                quickHull.Generate(pointNum, width, height);
+                totalCommandCount += quickHull.Solve();
+            }
+            Label_CommandCount.Content = totalCommandCount / runTime;
+        }
     }
 
     public class QuickHull
@@ -202,7 +217,7 @@ namespace QuickHullSolve
             }
             catch (Exception e)
             {
-                System.Windows.MessageBox.Show(e.Message);
+                //System.Windows.MessageBox.Show(e.Message);
                 return 0;
             }
         }
